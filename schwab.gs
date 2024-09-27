@@ -94,9 +94,10 @@ function schwab_GetQuote(stockSymbol,priceType) {
  * Returns a balance value of your Schwab account.
  *
  * @param {"equity"} balance the balance to obtain. Valid examples are [ "cashBalance" | "liquidationValue" | "longMarketValue" | "availableFunds" | "buyingPower" | "equity" | "longMarginValue" | "maintenanceRequirement" | "marginBalance" ]. Additional examples can be found in the API documentation.
+ * @param {"0"} account (optional) The account to return, 0 is first account, 1 is second account, etc
  * @customfunction
  */
-function schwab_Balance(balance) {
+function schwab_Balance(balance, acct = 0) {
   var authorization = schwab_GetBearerString();
   var options = {
     "method" : "GET",
@@ -118,9 +119,11 @@ function schwab_Balance(balance) {
 /**
  * Returns the positions in your Schwab portfolio with the following fields in an array: [ Stock Symbol | Quantity | Average Price | Market Value | Current Day P/L | Current Day P/L % ]
  *
+ * @param {"0"} account (optional) The account to return, 0 is first account, 1 is second account, etc
+ *
  * @customfunction
  */
-function schwab_Positions() {
+function schwab_Positions(acct = 0) {
   var authorization = schwab_GetBearerString();
   var options = {
     "method" : "GET",
