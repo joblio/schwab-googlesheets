@@ -1,3 +1,5 @@
+// https://github.com/bdf0506/schwab-googlesheets
+
 var userProperties = PropertiesService.getUserProperties();
 var scriptProperties = PropertiesService.getScriptProperties();
 var schwab_apikey = scriptProperties.getProperty('schwab_apikey')
@@ -11,14 +13,21 @@ function onOpen(e) {
   var ui = SpreadsheetApp.getUi();
   ui.createMenu('Schwab API')
     .addItem('Authenticate', 'schwab_ShowPane')
+    .addItem('Force Daily Update', 'forceUpdateDaily')
     .addSeparator()
     .addItem("Authentication expires: " + refresh_time_expiry, 'null')
     .addToUi();
 
 
     if ( Date.parse(mynow) > Date.parse(refresh_time_expiry) ) {
-    Logger.log("Schwab Authentication has expired, user needs to reauth.")
+    Logger.log("Schwab Authentication has expired, user needs to reauth.");
   }
+  Utilities.sleep(10);
+  if (SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Roth IRA').getRange('D5').getValue() == 0) {
+    showDialog();
+    return;
+  }
+  updateDaily();
 }
 
 function showDialog() {
@@ -119,7 +128,7 @@ function schwab_Balance(balance, acct = 0) {
 /**
  * Returns the positions in your Schwab portfolio with the following fields in an array: [ Stock Symbol | Quantity | Average Price | Market Value | Current Day P/L | Current Day P/L % ]
  *
- * @param {"0"} account (optional) The account to return, 0 is first account, 1 is second account, etc
+ * @param {"0"} account (optional) The account to return, zero-indexed. 
  *
  * @customfunction
  */
@@ -137,8 +146,11 @@ function schwab_Positions(acct = 0) {
 
   //Parse JSON
   var contents = result.getContentText();
+  // console.log(contents);
   var json = JSON.parse(contents);
-  var positions = json[0]["securitiesAccount"]["positions"];
+  // console.log(json);
+  var positions = json[acct]["securitiesAccount"]["positions"];
+  console.log(JSON.stringify(json[2]));
 
   var attributes = [
     "instrument", // The stock symbol is inside this returned "instrument" object.
